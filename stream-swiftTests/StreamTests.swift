@@ -20,7 +20,6 @@ class StreamTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         XCTAssertTrue(SubscriptionTracker.sharedInstance.validate())
     }
-
     
     func testSubscribeByTarget() {
         let stream = Stream<String?>()
@@ -100,7 +99,6 @@ class StreamTests: XCTestCase {
         XCTAssertEqual(true, stream.valuePresent)
     }
     
-    
     func testReplay() {
         let stream = Stream<String?>()
         stream.trigger("ciao")
@@ -154,6 +152,29 @@ class StreamTests: XCTestCase {
         var result = [String?]()
         stream.distinct({ $0 }).subscribe(replay: true) { result += [$0] }
         XCTAssertEqual([], result)
+        stream.dispose()
+    }
+    
+    func testFold() {
+        let stream = Stream<String?>()
+        var result: (String?, String?) = (nil, nil)
+        let sub = stream
+            .trigger(nil)
+            .fold(initialValue: (nil, nil)) { ($0.1, $1) }
+            .subscribe(replay: true) { (pair) in
+                result = pair
+            }
+        XCTAssertEqual(nil, result.0)
+        XCTAssertEqual(nil, result.1)
+        stream.trigger("1")
+        XCTAssertEqual(nil, result.0)
+        XCTAssertEqual("1", result.1)
+        stream.trigger("2")
+        XCTAssertEqual("1", result.0)
+        XCTAssertEqual("2", result.1)
+        stream.trigger(nil)
+        XCTAssertEqual("2", result.0)
+        XCTAssertEqual(nil, result.1)
         stream.dispose()
     }
 }

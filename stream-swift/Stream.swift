@@ -122,6 +122,15 @@ public class Stream<T> : Disposable {
         return stream
     }
     
+    func fold<U>(initialValue: U, accumulator: @escaping ((U, T) -> U)) -> Stream<U> {
+        var current = initialValue
+        return map {
+            let newValue = accumulator(current, $0)
+            current = newValue
+            return newValue
+        }
+    }
+    
     func dispose() {
         subscriptions = []
         disposables.forEach({ $0.dispose() })
@@ -129,8 +138,8 @@ public class Stream<T> : Disposable {
         value = nil
         valuePresent = false
     }
-    
 }
+
 
 public class Subscription<T>: Disposable, CustomStringConvertible {
     public typealias StreamHandler = (T) -> ()
@@ -166,9 +175,7 @@ public class Subscription<T>: Disposable, CustomStringConvertible {
 
 
 class SubscriptionTracker {
-    
     static let sharedInstance = SubscriptionTracker()
-    
     private var allocations: [String:Int]
     
     private init() {
