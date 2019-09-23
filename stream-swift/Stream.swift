@@ -231,6 +231,7 @@ class SubscriptionTracker {
     }
 }
 
+
 func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
     let stream = Stream<(A, B)>()
     let trigger: () -> Void = {
@@ -251,5 +252,137 @@ func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
     }
     a.disposables = [disposer]
     b.disposables = [disposer]
+    return stream
+}
+
+func combine<A, B, C>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>) -> Stream<(A, B, C)> {
+    let stream = Stream<(A, B, C)>()
+    let trigger: () -> Void = {
+        a.last { va in
+            b.last { vb in
+                c.last { vc in
+                    stream.trigger((va, vb, vc))
+                }
+            }
+        }
+    }
+    a.subscribe { (_) in trigger() }
+    b.subscribe { (_) in trigger() }
+    c.subscribe { (_) in trigger() }
+    var count = 3
+    let disposer = DisposableFunc() {
+        count -= 1
+        if count == 0 {
+            stream.dispose()
+        }
+    }
+    a.disposables = [disposer]
+    b.disposables = [disposer]
+    c.disposables = [disposer]
+    return stream
+}
+
+func combine<A, B, C, D>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>) -> Stream<(A, B, C, D)> {
+    let stream = Stream<(A, B, C, D)>()
+    let trigger: () -> Void = {
+        a.last { va in
+            b.last { vb in
+                c.last { vc in
+                    d.last { vd in
+                        stream.trigger((va, vb, vc, vd))
+                    }
+                }
+            }
+        }
+    }
+    a.subscribe { (_) in trigger() }
+    b.subscribe { (_) in trigger() }
+    c.subscribe { (_) in trigger() }
+    d.subscribe { (_) in trigger() }
+    var count = 4
+    let disposer = DisposableFunc() {
+        count -= 1
+        if count == 0 {
+            stream.dispose()
+        }
+    }
+    a.disposables = [disposer]
+    b.disposables = [disposer]
+    c.disposables = [disposer]
+    d.disposables = [disposer]
+    return stream
+}
+
+func combine<A, B, C, D, E>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>, _ e: Stream<E>) -> Stream<(A, B, C, D, E)> {
+    let stream = Stream<(A, B, C, D, E)>()
+    let trigger: () -> Void = {
+        a.last { va in
+            b.last { vb in
+                c.last { vc in
+                    d.last { vd in
+                        e.last { ve in
+                            stream.trigger((va, vb, vc, vd, ve))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    a.subscribe { (_) in trigger() }
+    b.subscribe { (_) in trigger() }
+    c.subscribe { (_) in trigger() }
+    d.subscribe { (_) in trigger() }
+    e.subscribe { (_) in trigger() }
+    var count = 5
+    let disposer = DisposableFunc() {
+        count -= 1
+        if count == 0 {
+            stream.dispose()
+        }
+    }
+    a.disposables = [disposer]
+    b.disposables = [disposer]
+    c.disposables = [disposer]
+    d.disposables = [disposer]
+    e.disposables = [disposer]
+    return stream
+}
+
+func combine<A, B, C, D, E, F>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>, _ e: Stream<E>, _ f: Stream<F>) -> Stream<(A, B, C, D, E, F)> {
+    let stream = Stream<(A, B, C, D, E, F)>()
+    let trigger: () -> Void = {
+        a.last { va in
+            b.last { vb in
+                c.last { vc in
+                    d.last { vd in
+                        e.last { ve in
+                            f.last { vf in
+                                stream.trigger((va, vb, vc, vd, ve, vf))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    a.subscribe { (_) in trigger() }
+    b.subscribe { (_) in trigger() }
+    c.subscribe { (_) in trigger() }
+    d.subscribe { (_) in trigger() }
+    e.subscribe { (_) in trigger() }
+    f.subscribe { (_) in trigger() }
+    var count = 6
+    let disposer = DisposableFunc() {
+        count -= 1
+        if count == 0 {
+            stream.dispose()
+        }
+    }
+    a.disposables = [disposer]
+    b.disposables = [disposer]
+    c.disposables = [disposer]
+    d.disposables = [disposer]
+    e.disposables = [disposer]
+    f.disposables = [disposer]
     return stream
 }
