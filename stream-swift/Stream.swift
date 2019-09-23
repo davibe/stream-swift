@@ -67,16 +67,16 @@ public class Stream<T> : Disposable {
         return subscription
     }
     
+    func unsubscribe(_ subscription: Subscription<T>) {
+        subscriptions = subscriptions.filter { $0 !== subscription }
+    }
+    
     // last value
     
     internal func last(cb: (T) -> Void) {
         if (valuePresent) {
             return cb(value!)
         }
-    }
-    
-    func unsubscribe(_ subscription: Subscription<T>) {
-        subscriptions = subscriptions.filter { $0 !== subscription }
     }
     
     // chainables
