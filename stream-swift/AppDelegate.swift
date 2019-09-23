@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  events-swift
+//  stream-swift
 //
 //  Created by Davide Bertola on 17/09/2019.
 //  Copyright © 2019 Davide Bertola. All rights reserved.

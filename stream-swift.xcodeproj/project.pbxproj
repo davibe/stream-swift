@@ -12,7 +12,9 @@
 		0D2BF07D233169860026B7AE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0D2BF07B233169860026B7AE /* Main.storyboard */; };
 		0D2BF07F233169870026B7AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D2BF07E233169870026B7AE /* Assets.xcassets */; };
 		0D2BF082233169870026B7AE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0D2BF080233169870026B7AE /* LaunchScreen.storyboard */; };
-		0D2BF08D233169880026B7AE /* events_swiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2BF08C233169880026B7AE /* events_swiftTests.swift */; };
+		0D2BF08D233169880026B7AE /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2BF08C233169880026B7AE /* StreamTests.swift */; };
+		0D2BF098233169940026B7AE /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2BF097233169940026B7AE /* Stream.swift */; };
+		0D2BF09923316BC30026B7AE /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2BF097233169940026B7AE /* Stream.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,16 +28,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0D2BF074233169860026B7AE /* events-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "events-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D2BF074233169860026B7AE /* stream-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "stream-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D2BF077233169860026B7AE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0D2BF079233169860026B7AE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		0D2BF07C233169860026B7AE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0D2BF07E233169870026B7AE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0D2BF081233169870026B7AE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0D2BF083233169870026B7AE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0D2BF088233169880026B7AE /* events-swiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "events-swiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0D2BF08C233169880026B7AE /* events_swiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = events_swiftTests.swift; sourceTree = "<group>"; };
+		0D2BF088233169880026B7AE /* stream-swiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stream-swiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D2BF08C233169880026B7AE /* StreamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTests.swift; sourceTree = "<group>"; };
 		0D2BF08E233169880026B7AE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0D2BF097233169940026B7AE /* Stream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stream.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,8 +62,8 @@
 		0D2BF06B233169860026B7AE = {
 			isa = PBXGroup;
 			children = (
-				0D2BF076233169860026B7AE /* events-swift */,
-				0D2BF08B233169880026B7AE /* events-swiftTests */,
+				0D2BF076233169860026B7AE /* stream-swift */,
+				0D2BF08B233169880026B7AE /* stream-swiftTests */,
 				0D2BF075233169860026B7AE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,13 +71,13 @@
 		0D2BF075233169860026B7AE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0D2BF074233169860026B7AE /* events-swift.app */,
-				0D2BF088233169880026B7AE /* events-swiftTests.xctest */,
+				0D2BF074233169860026B7AE /* stream-swift.app */,
+				0D2BF088233169880026B7AE /* stream-swiftTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0D2BF076233169860026B7AE /* events-swift */ = {
+		0D2BF076233169860026B7AE /* stream-swift */ = {
 			isa = PBXGroup;
 			children = (
 				0D2BF077233169860026B7AE /* AppDelegate.swift */,
@@ -83,25 +86,26 @@
 				0D2BF07E233169870026B7AE /* Assets.xcassets */,
 				0D2BF080233169870026B7AE /* LaunchScreen.storyboard */,
 				0D2BF083233169870026B7AE /* Info.plist */,
+				0D2BF097233169940026B7AE /* Stream.swift */,
 			);
-			path = "events-swift";
+			path = "stream-swift";
 			sourceTree = "<group>";
 		};
-		0D2BF08B233169880026B7AE /* events-swiftTests */ = {
+		0D2BF08B233169880026B7AE /* stream-swiftTests */ = {
 			isa = PBXGroup;
 			children = (
-				0D2BF08C233169880026B7AE /* events_swiftTests.swift */,
+				0D2BF08C233169880026B7AE /* StreamTests.swift */,
 				0D2BF08E233169880026B7AE /* Info.plist */,
 			);
-			path = "events-swiftTests";
+			path = "stream-swiftTests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0D2BF073233169860026B7AE /* events-swift */ = {
+		0D2BF073233169860026B7AE /* stream-swift */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0D2BF091233169880026B7AE /* Build configuration list for PBXNativeTarget "events-swift" */;
+			buildConfigurationList = 0D2BF091233169880026B7AE /* Build configuration list for PBXNativeTarget "stream-swift" */;
 			buildPhases = (
 				0D2BF070233169860026B7AE /* Sources */,
 				0D2BF071233169860026B7AE /* Frameworks */,
@@ -111,14 +115,14 @@
 			);
 			dependencies = (
 			);
-			name = "events-swift";
+			name = "stream-swift";
 			productName = "events-swift";
-			productReference = 0D2BF074233169860026B7AE /* events-swift.app */;
+			productReference = 0D2BF074233169860026B7AE /* stream-swift.app */;
 			productType = "com.apple.product-type.application";
 		};
-		0D2BF087233169880026B7AE /* events-swiftTests */ = {
+		0D2BF087233169880026B7AE /* stream-swiftTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0D2BF094233169880026B7AE /* Build configuration list for PBXNativeTarget "events-swiftTests" */;
+			buildConfigurationList = 0D2BF094233169880026B7AE /* Build configuration list for PBXNativeTarget "stream-swiftTests" */;
 			buildPhases = (
 				0D2BF084233169880026B7AE /* Sources */,
 				0D2BF085233169880026B7AE /* Frameworks */,
@@ -129,9 +133,9 @@
 			dependencies = (
 				0D2BF08A233169880026B7AE /* PBXTargetDependency */,
 			);
-			name = "events-swiftTests";
+			name = "stream-swiftTests";
 			productName = "events-swiftTests";
-			productReference = 0D2BF088233169880026B7AE /* events-swiftTests.xctest */;
+			productReference = 0D2BF088233169880026B7AE /* stream-swiftTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -153,7 +157,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 0D2BF06F233169860026B7AE /* Build configuration list for PBXProject "events-swift" */;
+			buildConfigurationList = 0D2BF06F233169860026B7AE /* Build configuration list for PBXProject "stream-swift" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -166,8 +170,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0D2BF073233169860026B7AE /* events-swift */,
-				0D2BF087233169880026B7AE /* events-swiftTests */,
+				0D2BF073233169860026B7AE /* stream-swift */,
+				0D2BF087233169880026B7AE /* stream-swiftTests */,
 			);
 		};
 /* End PBXProject section */
@@ -198,6 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0D2BF07A233169860026B7AE /* ViewController.swift in Sources */,
+				0D2BF098233169940026B7AE /* Stream.swift in Sources */,
 				0D2BF078233169860026B7AE /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -206,7 +211,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0D2BF08D233169880026B7AE /* events_swiftTests.swift in Sources */,
+				0D2BF09923316BC30026B7AE /* Stream.swift in Sources */,
+				0D2BF08D233169880026B7AE /* StreamTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +221,7 @@
 /* Begin PBXTargetDependency section */
 		0D2BF08A233169880026B7AE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 0D2BF073233169860026B7AE /* events-swift */;
+			target = 0D2BF073233169860026B7AE /* stream-swift */;
 			targetProxy = 0D2BF089233169880026B7AE /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -362,12 +368,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 376QEB74QY;
-				INFOPLIST_FILE = "events-swift/Info.plist";
+				INFOPLIST_FILE = "stream-swift/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.events-swift";
+				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.stream-swift";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -380,12 +386,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 376QEB74QY;
-				INFOPLIST_FILE = "events-swift/Info.plist";
+				INFOPLIST_FILE = "stream-swift/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.events-swift";
+				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.stream-swift";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -399,17 +405,17 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 376QEB74QY;
-				INFOPLIST_FILE = "events-swiftTests/Info.plist";
+				INFOPLIST_FILE = "stream-swiftTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.events-swiftTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.stream-swiftTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/events-swift.app/events-swift";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stream-swift.app/stream-swift";
 			};
 			name = Debug;
 		};
@@ -420,24 +426,24 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 376QEB74QY;
-				INFOPLIST_FILE = "events-swiftTests/Info.plist";
+				INFOPLIST_FILE = "stream-swiftTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.events-swiftTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "it.dadeb.ios.stream-swiftTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/events-swift.app/events-swift";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stream-swift.app/stream-swift";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0D2BF06F233169860026B7AE /* Build configuration list for PBXProject "events-swift" */ = {
+		0D2BF06F233169860026B7AE /* Build configuration list for PBXProject "stream-swift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0D2BF08F233169880026B7AE /* Debug */,
@@ -446,7 +452,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0D2BF091233169880026B7AE /* Build configuration list for PBXNativeTarget "events-swift" */ = {
+		0D2BF091233169880026B7AE /* Build configuration list for PBXNativeTarget "stream-swift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0D2BF092233169880026B7AE /* Debug */,
@@ -455,7 +461,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0D2BF094233169880026B7AE /* Build configuration list for PBXNativeTarget "events-swiftTests" */ = {
+		0D2BF094233169880026B7AE /* Build configuration list for PBXNativeTarget "stream-swiftTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0D2BF095233169880026B7AE /* Debug */,
