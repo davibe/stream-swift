@@ -91,7 +91,7 @@ public class Stream<T> : Disposable {
     }
     
     func map<U>(fn: @escaping (T) -> U) -> Stream<U> {
-        var stream = Stream<U>()
+        let stream = Stream<U>()
         disposables += [stream]
         if valuePresent { stream.trigger(fn(value!)) }
         stream.disposables += [subscribe() { v in
@@ -105,9 +105,8 @@ public class Stream<T> : Disposable {
         let stream = Stream<T>()
         disposables += [stream]
         if (valuePresent) { stream.trigger(value!) }
-        var sub: Subscription<T>? = nil
         var started = false
-        sub = subscribe(replay: true) { v in
+        subscribe(replay: true) { v in
             if (started) { return }
             started = true
             var prev = v
