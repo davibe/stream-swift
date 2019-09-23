@@ -177,6 +177,30 @@ class StreamTests: XCTestCase {
         XCTAssertEqual(nil, result.1)
         stream.dispose()
     }
+    
+    func testCombine() {
+        let a = Stream<String?>()
+        let b = Stream<String?>()
+        var result = [(String?, String?)]()
+        // tuple of equatable values should be equatable in general ?
+        let merge: ((String?, String?)) -> String = { "\($0.0)\($0.1)" }
+        combine(a, b).distinct({ merge($0) }).subscribe { tuple in
+            result += [tuple]
+        }
+        a.trigger("1")
+        b.trigger(nil)
+        b.trigger("2")
+        a.trigger("2")
+        a.trigger("2")
+        a.dispose()
+        b.trigger("3")
+        XCTAssertEqual([
+            merge(("1", nil)),
+            merge(("1", "2")),
+            merge(("2", "2"))
+        ], result.map(merge))
+        b.dispose()
+    }
 }
 
 

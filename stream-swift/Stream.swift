@@ -11,12 +11,22 @@ protocol Disposable {
     func dispose()
 }
 
+struct DisposableFunc: Disposable {
+    let cb: () -> Void
+    init(cb: @escaping () -> Void) {
+        self.cb = cb
+    }
+    func dispose() {
+        self.cb()
+    }
+}
+
 
 public class Stream<T> : Disposable {
     
     public typealias StreamHandler = (T) -> ()
     public var subscriptions = [Subscription<T>]()
-    private var disposables = [Disposable]()
+    var disposables = [Disposable]()
     var valuePresent = false
     var value: T?
     
@@ -219,4 +229,27 @@ class SubscriptionTracker {
         }
         return value
     }
+}
+
+func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
+    let stream = Stream<(A, B)>()
+    let trigger: () -> Void = {
+        a.last { va in
+            b.last { vb in
+                stream.trigger((va, vb))
+            }
+        }
+    }
+    a.subscribe { (_) in trigger() }
+    b.subscribe { (_) in trigger() }
+    var count = 2
+    let disposer = DisposableFunc() {
+        count -= 1
+        if count == 0 {
+            stream.dispose()
+        }
+    }
+    a.disposables = [disposer]
+    b.disposables = [disposer]
+    return stream
 }
