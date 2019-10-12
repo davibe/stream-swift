@@ -14,6 +14,7 @@ class StreamTests: XCTestCase {
 
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
+        SubscriptionTracker.sharedInstance.reset()
     }
 
     override func tearDown() {
@@ -24,37 +25,37 @@ class StreamTests: XCTestCase {
     func testSubscribeByTarget() {
         let stream = Stream<String?>()
         var result: String? = nil
-        stream.subscribe(self) { string in
+        let sub = stream.subscribe(self) { string in
             result = string
         }
         stream.trigger("ciao")
         stream.trigger("mondo")
         XCTAssertEqual("mondo", result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testUnsubscribeByTarget() {
         let stream = Stream<String?>()
         var result: String? = nil
-        stream.subscribe(self) { string in
+        let sub = stream.subscribe(self) { string in
             result = string
         }
         stream.trigger("ciao")
         stream.unsubscribe(self)
         stream.trigger("mondo")
         XCTAssertEqual("ciao", result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testSubscribeSimple() {
         let stream = Stream<String?>()
         var result: String? = nil
-        stream.subscribe() { string in
+        let sub = stream.subscribe() { string in
             result = string
         }
         stream.trigger("ciao").trigger("mondo")
         XCTAssertEqual("mondo", result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testUnsubscribeSimple() {
@@ -67,16 +68,15 @@ class StreamTests: XCTestCase {
         sub.dispose()
         stream.trigger("mondo")
         XCTAssertEqual("ciao", result)
-        stream.dispose()
     }
     
     func testNoValue() {
         let stream = Stream<Unit?>()
         var called = false
-        stream.subscribe() { _ in called = true }
+        let sub = stream.subscribe() { _ in called = true }
         stream.trigger(nil)
         XCTAssertEqual(true, called)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testLast() {
@@ -103,39 +103,39 @@ class StreamTests: XCTestCase {
         let stream = Stream<String?>()
         stream.trigger("ciao")
         var result: String? = nil
-        stream.subscribe(replay: true) { string in
+        let sub = stream.subscribe(replay: true) { string in
             result = string
         }
         XCTAssertEqual("ciao", result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testReplayWithNoValue() {
         let stream = Stream<String?>()
         var called = false
-        stream.subscribe(replay: true) { _ in
+        let sub = stream.subscribe(replay: true) { _ in
             called = true
         }
         XCTAssertEqual(false, called)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testMap() {
         let stream = Stream<Int?>()
         var result = [String]()
         stream.trigger(nil)
-        stream
+        let sub = stream
             .map { $0?.description ?? "" }
             .subscribe(replay: true) { result += [$0] }
         stream.trigger(1).trigger(2)
         XCTAssertEqual(["", "1",  "2"], result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testDistinct() {
         let stream = Stream<String?>()
         var result = [String?]()
-        stream.distinct({ $0 }).subscribe(replay: true) { result += [$0] }
+        let sub = stream.distinct({ $0 }).subscribe(replay: true) { result += [$0] }
         stream
             .trigger(nil).trigger(nil)
             .trigger("1")
@@ -144,15 +144,15 @@ class StreamTests: XCTestCase {
             .trigger("3").trigger("3").trigger("3")
             .trigger(nil).trigger(nil)
         XCTAssertEqual([nil, "1", "2", nil, "3", nil], result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testDistinctNoLeak() {
         let stream = Stream<String?>()
         var result = [String?]()
-        stream.distinct({ $0 }).subscribe(replay: true) { result += [$0] }
+        let sub = stream.distinct({ $0 }).subscribe(replay: true) { result += [$0] }
         XCTAssertEqual([], result)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testFold() {
@@ -175,7 +175,7 @@ class StreamTests: XCTestCase {
         stream.trigger(nil)
         XCTAssertEqual("2", result.0)
         XCTAssertEqual(nil, result.1)
-        stream.dispose()
+        sub.dispose()
     }
     
     func testCombine() {
@@ -184,7 +184,7 @@ class StreamTests: XCTestCase {
         var result = [(String?, String?)]()
         // tuple of equatable values should be equatable in general ?
         let merge: ((String?, String?)) -> String = { "\($0.0)\($0.1)" }
-        combine(a, b).distinct({ merge($0) }).subscribe { tuple in
+        let sub = combine(a, b).distinct({ merge($0) }).subscribe { tuple in
             result += [tuple]
         }
         a.trigger("1")
@@ -200,6 +200,7 @@ class StreamTests: XCTestCase {
             merge(("2", "2"))
         ], result.map(merge))
         b.dispose()
+        sub.dispose()
     }
 }
 
