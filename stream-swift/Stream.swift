@@ -6,7 +6,6 @@
 
 import Foundation
 
-// MARK: - Disposable protocol
 protocol Disposable {
     func dispose()
 }
@@ -31,13 +30,20 @@ fileprivate class Weak<T: AnyObject> {
 }
 
 
-public class Stream<T> : Disposable {
+public class Stream<T> : Disposable, AllocationTrackable {
     
     public typealias StreamHandler = (T) -> ()
     private var subscriptions = [Weak<Subscription<T>>]()
     var disposables = [Disposable]()
     var valuePresent = false
     var value: T?
+    
+    var debugKey: String = ""
+    
+    init() {
+        var trackable = self as AllocationTrackable
+        AllocationTracker.sharedInstance.plus(&trackable, type: "Stream")
+    }
     
     // sub apis
 
@@ -53,16 +59,15 @@ public class Stream<T> : Disposable {
     ) -> Subscription<T> {
         let subscription = Subscription<T>(target: target, stream: self, strong: strong, handler: handler)
         
-        #if DEBUG
-        let filename = URL(fileURLWithPath: file).lastPathComponent
-        subscription.debugString = "\(filename):\(line) in \(function)"
-        SubscriptionTracker.sharedInstance.plus(key: subscription.debugString!)
-        #endif
+        var trackable = subscription as AllocationTrackable
+        if strong {
+            AllocationTracker.sharedInstance.plus(&trackable, type: "Subscription", line: line, file: file, function: function)
+        } else {
+            AllocationTracker.sharedInstance.plus(&trackable, type: "Subscription")
+        }
         
         subscriptions.append(Weak(subscription))
-        if strong {
-            subscriptionRegistry.append(subscription)
-        }
+        if strong { subscriptionRegistry.append(subscription) }
         
         if replay && valuePresent { handler(self.value!) }
         return subscription
@@ -76,7 +81,6 @@ public class Stream<T> : Disposable {
                 subscriptionRegistry = subscriptionRegistry.filter { $0 !== sub }
             }
             return include
-            
         }
     }
     
@@ -89,12 +93,15 @@ public class Stream<T> : Disposable {
         function: String = #function,
         _ handler: @escaping StreamHandler
     ) -> Subscription<T> {
-        let subscription = Subscription<T>(target: self, stream: self, strong:strong, handler: handler)
+        let subscription = Subscription<T>(target: self, stream: self, strong: strong, handler: handler)
         
         #if DEBUG
-        let filename = URL(fileURLWithPath: file).lastPathComponent
-        subscription.debugString = "\(filename):\(line) in \(function)"
-        SubscriptionTracker.sharedInstance.plus(key: subscription.debugString!)
+        var trackable = subscription as AllocationTrackable
+        if strong {
+            AllocationTracker.sharedInstance.plus(&trackable, type: "Subscription", line: line, file: file, function: function)
+        } else {
+            AllocationTracker.sharedInstance.plus(&trackable, type: "Subscription", line: line)
+        }
         #endif
         
         subscriptions.append(Weak(subscription))
@@ -150,18 +157,19 @@ public class Stream<T> : Disposable {
         var started = false
         let sub = subscribe(replay: true, strong: false) { [weak stream, weak self] v in
             if (started) { return }
+            guard let stream = stream, let self = self else { return }
+            
             started = true
             var prev = v
-            stream?.trigger(prev)
-            let sub = self?.subscribe(replay: false, strong: false) { [weak stream] next in
+            stream.trigger(prev)
+            let sub = self.subscribe(replay: false, strong: false) { [weak stream] next in
+                guard let stream = stream else { return }
                 if f(next) != f(prev) {
-                    stream?.trigger(next)
+                    stream.trigger(next)
                     prev = next
                 }
             }
-            if let stream = stream, let sub = sub {
-                stream.disposables += [sub]
-            }
+            stream.disposables += [sub]
         }
         stream.disposables += [sub]
         return stream
@@ -176,32 +184,67 @@ public class Stream<T> : Disposable {
         }
     }
     
+    func filter(_ f: @escaping (T) -> Bool) -> Stream<T> {
+        let stream = Stream<T>()
+        if (valuePresent) { stream.trigger(value!) }
+        
+        stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
+            guard let stream = stream else { return }
+            if f(v) { stream.trigger(v) }
+        }]
+        
+        return stream
+    }
+    
+    func take(_ amount: Int) -> Stream<T> {
+        let stream = Stream<T>()
+        if (valuePresent) { stream.trigger(value!) }
+        
+        var count = 0
+        stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
+            guard let stream = stream else { return }
+            if count <= amount {
+                stream.trigger(v)
+                count += 1
+            } else {
+                stream.dispose()
+            }
+        }]
+        
+        return stream
+    }
+    
     func dispose() {
         subscriptions = []
         disposables.forEach({ $0.dispose() })
         disposables = []
         value = nil
         valuePresent = false
+        if debugKey != "" { AllocationTracker.sharedInstance.minus(self) }
+    }
+    
+    deinit {
+        dispose()
     }
 }
 
 
 fileprivate var subscriptionRegistry = [AnyObject]()
 
-public class Subscription<T>: Disposable, CustomStringConvertible {
+public class Subscription<T>: Disposable, CustomStringConvertible, AllocationTrackable {
     public typealias StreamHandler = (T) -> ()
     weak var target: AnyObject? = nil
     let stream: Stream<T>
     let handler: StreamHandler
-    var debugString: String? = nil
     var strong: Bool = false
+    var debugKey: String = ""
     
     public var description: String {
         get {
-            guard let debugString = debugString else {
+            if debugKey != "" {
                 return "Subscription for \(String(describing: T.self))"
             }
-            return "Subscription for \(String(describing: T.self)) at \(debugString)"
+            return "Subscription for \(String(describing: T.self)) at \(debugKey)"
         }
     }
     
@@ -217,41 +260,58 @@ public class Subscription<T>: Disposable, CustomStringConvertible {
     }
     
     deinit {
-        guard let debugString = self.debugString else { return }
-        SubscriptionTracker.sharedInstance.minus(key: debugString)
+        if debugKey != "" { AllocationTracker.sharedInstance.minus(self) }
     }
     
 }
 
+protocol AllocationTrackable {
+    var debugKey: String { get set }
+}
 
-class SubscriptionTracker {
-    static let sharedInstance = SubscriptionTracker()
+class AllocationTracker {
+    static let sharedInstance = AllocationTracker()
     private var allocations: [String:Int]
     
     private init() {
         allocations = [:]
     }
     
-    func plus(key: String) {
-        
+    func plus(
+        _ trackable: inout AllocationTrackable,
+        type: String,
+        key: String? = nil,
+        line: Int? = nil,
+        file: String? = nil,
+        function: String? = nil
+    ) {
         #if !DEBUG
         return
         #endif
         
+        let generated = generate()
+        var key = "\(type)\n  \(generated)"
+        
+        if let line = line, let file = file, let function = function {
+            let filename = URL(fileURLWithPath: file).lastPathComponent
+            let location = "\(filename):\(line) in \(function)"
+            key = "\(type)\n  \(location)\n  \(generate())"
+        }
+
+        trackable.debugKey = key
         var value = allocations[key] ?? 0
         value += 1
         allocations[key] = value
     }
     
-    func minus(key: String) {
-        
+    func minus(_ trackable: AllocationTrackable) {
         #if !DEBUG
         return
         #endif
         
-        var value = allocations[key] ?? 1
+        var value = allocations[trackable.debugKey] ?? 1
         value -= 1
-        allocations[key] = value
+        allocations[trackable.debugKey] = value
     }
     
     func reset() { allocations = [:] }
@@ -266,11 +326,16 @@ class SubscriptionTracker {
         
         for allocation in allocations {
             if (allocation.value > 0) {
-                print("Subscription LEAK at \(allocation.key)")
+                print("LEAK \(allocation.key)")
                 value = false
             }
         }
         return value
+    }
+    
+    func generate() -> String {
+        // TODO: find a way to have a nicer stack trace
+        return Thread.callStackSymbols[2...10].joined(separator: "\n  ")
     }
 }
 

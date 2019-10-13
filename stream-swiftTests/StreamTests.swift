@@ -14,12 +14,12 @@ class StreamTests: XCTestCase {
 
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
-        SubscriptionTracker.sharedInstance.reset()
+        AllocationTracker.sharedInstance.reset()
     }
 
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
-        XCTAssertTrue(SubscriptionTracker.sharedInstance.validate())
+        XCTAssertTrue(AllocationTracker.sharedInstance.validate())
     }
     
     func testSubscribeByTarget() {
@@ -175,6 +175,58 @@ class StreamTests: XCTestCase {
         stream.trigger(nil)
         XCTAssertEqual("2", result.0)
         XCTAssertEqual(nil, result.1)
+        sub.dispose()
+    }
+    
+    func testFilter() {
+        let stream = Stream<String>()
+        var result = [String]()
+        stream.trigger("2").trigger("2")
+        let sub = stream.filter { $0 == "2" }.subscribe(replay: false) { result += [$0] }
+        stream
+            .trigger("1")
+            .trigger("2").trigger("2")
+            .trigger("3").trigger("3").trigger("3")
+        XCTAssertEqual(["2", "2"], result)
+        sub.dispose()
+    }
+    
+    func testTake() {
+        let stream = Stream<String>()
+        var result = [String]()
+        stream.trigger("2").trigger("2")
+        let sub = stream.take(3).subscribe(replay: false) { result += [$0] }
+        stream
+            .trigger("1")
+            .trigger("2").trigger("2")
+            .trigger("3").trigger("3").trigger("3")
+        XCTAssertEqual(["1", "2", "2"], result)
+        sub.dispose()
+    }
+    
+    func testTake2() {
+        let stream = Stream<String>()
+        var result = [String]()
+        stream.trigger("2").trigger("2")
+        let sub = stream.take(3).subscribe(replay: true) { result += [$0] }
+        stream
+            .trigger("1")
+            .trigger("2").trigger("2")
+            .trigger("3").trigger("3").trigger("3")
+        XCTAssertEqual(["2", "1", "2", "2"], result)
+        sub.dispose()
+    }
+    
+    func testTakeMany() {
+        let stream = Stream<String>()
+        var result = [String]()
+        stream.trigger("2").trigger("2")
+        let sub = stream.take(300).subscribe(replay: true) { result += [$0] }
+        stream
+            .trigger("1")
+            .trigger("2").trigger("2")
+            .trigger("3").trigger("3").trigger("3")
+        XCTAssertEqual(["2", "1", "2", "2", "3", "3", "3"], result)
         sub.dispose()
     }
     
