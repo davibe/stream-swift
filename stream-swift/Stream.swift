@@ -143,8 +143,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     @discardableResult
     func map<U>(fn: @escaping (T) -> U) -> Stream<U> {
         let stream = Stream<U>()
-        if valuePresent { stream.trigger(fn(value!)) }
-        stream.disposables += [subscribe(strong: false) { [weak stream] v in
+        stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
             stream?.trigger(fn(v))
         }]
         return stream
@@ -153,25 +152,16 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     func distinct<U: Equatable>(_ f: @escaping (T) -> U) -> Stream<T> {
         let stream = Stream<T>()
-        if (valuePresent) { stream.trigger(value!) }
-        var started = false
-        let sub = subscribe(replay: true, strong: false) { [weak stream, weak self] v in
-            if (started) { return }
-            guard let stream = stream, let self = self else { return }
-            
-            started = true
-            var prev = v
-            stream.trigger(prev)
-            let sub = self.subscribe(replay: false, strong: false) { [weak stream] next in
-                guard let stream = stream else { return }
-                if f(next) != f(prev) {
-                    stream.trigger(next)
-                    prev = next
-                }
+        
+        var waitingFirst = !self.valuePresent
+        stream.disposables = [self.subscribe(replay: false, strong: false) { [weak stream] next in
+            guard let stream = stream else { return }
+            if waitingFirst || f(next) != f(stream.value!) {
+                stream.trigger(next)
+                waitingFirst = false
             }
-            stream.disposables += [sub]
-        }
-        stream.disposables += [sub]
+        }]
+        
         return stream
     }
     
@@ -186,7 +176,6 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     func filter(_ f: @escaping (T) -> Bool) -> Stream<T> {
         let stream = Stream<T>()
-        if (valuePresent) { stream.trigger(value!) }
         
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
             guard let stream = stream else { return }
@@ -198,7 +187,6 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     func take(_ amount: Int) -> Stream<T> {
         let stream = Stream<T>()
-        if (valuePresent) { stream.trigger(value!) }
         
         var count = 0
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
