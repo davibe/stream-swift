@@ -84,6 +84,8 @@ public class Stream<T> : Disposable, AllocationTrackable {
         }
     }
     
+    // sub apis based on ownership (deprecated)
+    
     @discardableResult
     func subscribe(
         replay: Bool = false,
@@ -147,7 +149,6 @@ public class Stream<T> : Disposable, AllocationTrackable {
             stream?.trigger(fn(v))
         }]
         return stream
-        
     }
     
     func distinct<U: Equatable>(_ f: @escaping (T) -> U) -> Stream<T> {
@@ -176,18 +177,15 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     func filter(_ f: @escaping (T) -> Bool) -> Stream<T> {
         let stream = Stream<T>()
-        
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
             guard let stream = stream else { return }
             if f(v) { stream.trigger(v) }
         }]
-        
         return stream
     }
     
     func take(_ amount: Int) -> Stream<T> {
         let stream = Stream<T>()
-        
         var count = 0
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
             guard let stream = stream else { return }
@@ -198,7 +196,6 @@ public class Stream<T> : Disposable, AllocationTrackable {
                 stream.dispose()
             }
         }]
-        
         return stream
     }
     
