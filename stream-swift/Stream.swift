@@ -280,7 +280,7 @@ class AllocationTracker {
         if let line = line, let file = file, let function = function {
             let filename = URL(fileURLWithPath: file).lastPathComponent
             let location = "\(filename):\(line) in \(function)"
-            key = "\(type)\n  \(location)\n  \(generate())"
+            key = "\(type)\n  \(location)\n"
         }
 
         trackable.debugKey = key
