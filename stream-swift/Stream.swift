@@ -35,14 +35,21 @@ public class Stream<T> : Disposable, AllocationTrackable {
     public typealias StreamHandler = (T) -> ()
     private var subscriptions = [Weak<Subscription<T>>]()
     var disposables = [Disposable]()
+    let memory: Bool
     var valuePresent = false
     var value: T?
     
     var debugDescription: String = ""
     
-    init() {
+    init(
+        memory: Bool = true,
+        line: Int = #line,
+        file: String = #file,
+        function: String = #function
+    ) {
+        self.memory = memory
         var trackable = self as AllocationTrackable
-        AllocationTracker.sharedInstance.plus(&trackable, type: "Stream")
+        AllocationTracker.sharedInstance.plus(&trackable, type: "Stream", line: line, file: file, function: function)
     }
     
     // sub apis
@@ -76,6 +83,10 @@ public class Stream<T> : Disposable, AllocationTrackable {
     func unsubscribe(_ target: AnyObject) {
         subscriptions = subscriptions.filter {
             guard let sub = $0.get() else { return true }
+            if sub.target == nil && sub.strong {
+                sub.dispose()
+                subscriptionRegistry = subscriptionRegistry.filter { $0 !== sub }
+            }
             let include = sub.target !== target
             if (!include && sub.strong) {
                 subscriptionRegistry = subscriptionRegistry.filter { $0 !== sub }
@@ -134,8 +145,10 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     @discardableResult
     func trigger(_ value: T) -> Stream<T> {
-        self.value = value
-        valuePresent = true
+        if self.memory {
+            self.value = value
+            valuePresent = true
+        }
         subscriptions.forEach { (subscription) in
             subscription.get()?.handler(value)
         }
@@ -213,7 +226,6 @@ public class Stream<T> : Disposable, AllocationTrackable {
     }
 }
 
-
 fileprivate var subscriptionRegistry = [AnyObject]()
 
 public class Subscription<T>: Disposable, CustomStringConvertible, AllocationTrackable {
@@ -275,12 +287,12 @@ class AllocationTracker {
         #endif
         
         let generated = generate()
-        var key = "\(type)\n  \(generated)"
+        var key = "\(type)\n \(generated)"
         
         if let line = line, let file = file, let function = function {
             let filename = URL(fileURLWithPath: file).lastPathComponent
             let location = "\(filename):\(line) in \(function)"
-            key = "\(type)\n  \(location)\n"
+            key = "\(type)\n \(location)\n"
         }
 
         trackable.debugDescription = key
@@ -318,8 +330,9 @@ class AllocationTracker {
         return value
     }
     
+    // TODO: find a way to have a nicer stack trace
+    // NOTE: holding references to this string seems to create ref cycles (?(
     func generate() -> String {
-        // TODO: find a way to have a nicer stack trace
         return Thread.callStackSymbols[2...10].joined(separator: "\n  ")
     }
 }
