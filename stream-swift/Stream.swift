@@ -38,7 +38,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     var valuePresent = false
     var value: T?
     
-    var debugKey: String = ""
+    var debugDescription: String = ""
     
     init() {
         var trackable = self as AllocationTrackable
@@ -205,7 +205,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         disposables = []
         value = nil
         valuePresent = false
-        if debugKey != "" { AllocationTracker.sharedInstance.minus(self) }
+        if debugDescription != "" { AllocationTracker.sharedInstance.minus(self) }
     }
     
     deinit {
@@ -222,14 +222,14 @@ public class Subscription<T>: Disposable, CustomStringConvertible, AllocationTra
     let stream: Stream<T>
     let handler: StreamHandler
     var strong: Bool = false
-    var debugKey: String = ""
+    var debugDescription: String = ""
     
     public var description: String {
         get {
-            if debugKey != "" {
+            if debugDescription != "" {
                 return "Subscription for \(String(describing: T.self))"
             }
-            return "Subscription for \(String(describing: T.self)) at \(debugKey)"
+            return "Subscription for \(String(describing: T.self)) at \(debugDescription)"
         }
     }
     
@@ -245,13 +245,13 @@ public class Subscription<T>: Disposable, CustomStringConvertible, AllocationTra
     }
     
     deinit {
-        if debugKey != "" { AllocationTracker.sharedInstance.minus(self) }
+        if debugDescription != "" { AllocationTracker.sharedInstance.minus(self) }
     }
     
 }
 
 protocol AllocationTrackable {
-    var debugKey: String { get set }
+    var debugDescription: String { get set }
 }
 
 class AllocationTracker {
@@ -283,7 +283,7 @@ class AllocationTracker {
             key = "\(type)\n  \(location)\n"
         }
 
-        trackable.debugKey = key
+        trackable.debugDescription = key
         var value = allocations[key] ?? 0
         value += 1
         allocations[key] = value
@@ -294,9 +294,9 @@ class AllocationTracker {
         return
         #endif
         
-        var value = allocations[trackable.debugKey] ?? 1
+        var value = allocations[trackable.debugDescription] ?? 1
         value -= 1
-        allocations[trackable.debugKey] = value
+        allocations[trackable.debugDescription] = value
     }
     
     func reset() { allocations = [:] }
