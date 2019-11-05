@@ -52,8 +52,9 @@ public class Stream<T> : Disposable, AllocationTrackable {
         AllocationTracker.sharedInstance.plus(&trackable, type: "Stream", line: line, file: file, function: function)
     }
     
-    // sub apis
+    // sub apis based on ownership (deprecated)
 
+    @available(*, deprecated, message: "Please, use variant with no target")
     @discardableResult
     func subscribe(
         _ target: AnyObject,
@@ -80,6 +81,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         return subscription
     }
     
+    @available(*, deprecated, message: "Please, use variant with no target")
     func unsubscribe(_ target: AnyObject) {
         subscriptions = subscriptions.filter {
             guard let sub = $0.get() else { return true }
@@ -95,7 +97,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         }
     }
     
-    // sub apis based on ownership (deprecated)
+    // sub apis
     
     @discardableResult
     func subscribe(
