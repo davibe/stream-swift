@@ -6,15 +6,15 @@
 
 import Foundation
 
-protocol Disposable {
+public protocol Disposable {
     func dispose()
 }
-struct DisposableFunc: Disposable {
+public struct DisposableFunc: Disposable {
     let cb: () -> Void
-    init(cb: @escaping () -> Void) {
+    public init(cb: @escaping () -> Void) {
         self.cb = cb
     }
-    func dispose() {
+    public func dispose() {
         self.cb()
     }
 }
@@ -41,7 +41,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     var debugDescription: String = ""
     
-    init(
+    public init(
         memory: Bool = true,
         line: Int = #line,
         file: String = #file,
@@ -56,7 +56,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
 
     @available(*, deprecated, message: "Please, use variant with no target")
     @discardableResult
-    func subscribe(
+    public func subscribe(
         _ target: AnyObject,
         replay: Bool = false,
         strong: Bool = true,
@@ -82,7 +82,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     }
     
     @available(*, deprecated, message: "Please, use variant with no target")
-    func unsubscribe(_ target: AnyObject) {
+    public func unsubscribe(_ target: AnyObject) {
         subscriptions = subscriptions.filter {
             guard let sub = $0.get() else { return true }
             if sub.target == nil && sub.strong {
@@ -98,9 +98,8 @@ public class Stream<T> : Disposable, AllocationTrackable {
     }
     
     // sub apis
-    
     @discardableResult
-    func subscribe(
+    public func subscribe(
         replay: Bool = false,
         strong: Bool = true,
         line: Int = #line,
@@ -128,7 +127,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         return subscription
     }
     
-    func unsubscribe(_ sub: Subscription<T>) {
+    public func unsubscribe(_ sub: Subscription<T>) {
         subscriptions = subscriptions.filter { $0.get() !== sub }
         if sub.strong {
             subscriptionRegistry = subscriptionRegistry.filter { $0 !== sub }
@@ -137,7 +136,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     
     // last value
     
-    internal func last(cb: (T) -> Void) {
+    public func last(cb: (T) -> Void) {
         if (valuePresent) {
             return cb(value!)
         }
@@ -146,7 +145,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     // chainables
     
     @discardableResult
-    func trigger(_ value: T) -> Stream<T> {
+    public func trigger(_ value: T) -> Stream<T> {
         if self.memory {
             self.value = value
             valuePresent = true
@@ -158,7 +157,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
     }
     
     @discardableResult
-    func map<U>(fn: @escaping (T) -> U) -> Stream<U> {
+    public func map<U>(fn: @escaping (T) -> U) -> Stream<U> {
         let stream = Stream<U>()
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
             stream?.trigger(fn(v))
@@ -166,13 +165,13 @@ public class Stream<T> : Disposable, AllocationTrackable {
         return stream
     }
     
-    func distinct<U: Equatable>(_ f: @escaping (T) -> U) -> Stream<T> {
+    public func distinct<U: Equatable>(_ f: @escaping (T) -> U) -> Stream<T> {
         let stream = Stream<T>()
         
         var waitingFirst = !self.valuePresent
-        stream.disposables = [self.subscribe(replay: false, strong: false) { [weak stream] next in
+        stream.disposables = [self.subscribe(replay: true, strong: false) { [weak stream] next in
             guard let stream = stream else { return }
-            if waitingFirst || f(next) != f(stream.value!) {
+            if waitingFirst || !stream.valuePresent || f(next) != f(stream.value!) {
                 stream.trigger(next)
                 waitingFirst = false
             }
@@ -181,7 +180,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         return stream
     }
     
-    func fold<U>(initialValue: U, accumulator: @escaping ((U, T) -> U)) -> Stream<U> {
+    public func fold<U>(initialValue: U, accumulator: @escaping ((U, T) -> U)) -> Stream<U> {
         var current = initialValue
         return map {
             let newValue = accumulator(current, $0)
@@ -190,7 +189,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         }
     }
     
-    func filter(_ f: @escaping (T) -> Bool) -> Stream<T> {
+    public func filter(_ f: @escaping (T) -> Bool) -> Stream<T> {
         let stream = Stream<T>()
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
             guard let stream = stream else { return }
@@ -199,7 +198,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         return stream
     }
     
-    func take(_ amount: Int) -> Stream<T> {
+    public func take(_ amount: Int) -> Stream<T> {
         let stream = Stream<T>()
         var count = 0
         stream.disposables += [subscribe(replay: true, strong: false) { [weak stream] v in
@@ -214,7 +213,7 @@ public class Stream<T> : Disposable, AllocationTrackable {
         return stream
     }
     
-    func dispose() {
+    public func dispose() {
         subscriptions = []
         disposables.forEach({ $0.dispose() })
         disposables = []
@@ -254,7 +253,7 @@ public class Subscription<T>: Disposable, CustomStringConvertible, AllocationTra
         self.handler = handler
     }
     
-    func dispose() {
+    public func dispose() {
         stream.unsubscribe(self)
     }
     
@@ -340,7 +339,7 @@ class AllocationTracker {
 }
 
 
-func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
+public func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
     let stream = Stream<(A, B)>()
     let trigger: () -> Void = { [weak stream] in
         a.last { va in
@@ -350,9 +349,10 @@ func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
         }
     }
     stream.disposables += [
-        a.subscribe(strong: true) { (_) in trigger() },
-        b.subscribe(strong: true) { (_) in trigger() }
+        a.subscribe { (_) in trigger() },
+        b.subscribe { (_) in trigger() }
     ]
+    trigger()
     // destroying when all parents die
     var count = 2
     let disposer = DisposableFunc() { [weak stream] in
@@ -366,7 +366,7 @@ func combine<A, B>(_ a: Stream<A>, _ b: Stream<B>) -> Stream<(A, B)> {
     return stream
 }
 
-func combine<A, B, C>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>) -> Stream<(A, B, C)> {
+public func combine<A, B, C>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>) -> Stream<(A, B, C)> {
     let stream = Stream<(A, B, C)>()
     let trigger: () -> Void = { [weak stream] in
         a.last { va in
@@ -382,6 +382,7 @@ func combine<A, B, C>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>) -> Stream<
         b.subscribe { (_) in trigger() },
         c.subscribe { (_) in trigger() }
     ]
+    trigger()
     // destroying when all parents die
     var count = 3
     let disposer = DisposableFunc() { [weak stream] in
@@ -396,7 +397,7 @@ func combine<A, B, C>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>) -> Stream<
     return stream
 }
 
-func combine<A, B, C, D>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>) -> Stream<(A, B, C, D)> {
+public func combine<A, B, C, D>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>) -> Stream<(A, B, C, D)> {
     let stream = Stream<(A, B, C, D)>()
     let trigger: () -> Void = { [weak stream] in
         a.last { va in
@@ -415,6 +416,7 @@ func combine<A, B, C, D>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: St
         c.subscribe { (_) in trigger() },
         d.subscribe { (_) in trigger() }
     ]
+    trigger()
     // destroying when all parents die
     var count = 4
     let disposer = DisposableFunc() { [weak stream] in
@@ -430,7 +432,7 @@ func combine<A, B, C, D>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: St
     return stream
 }
 
-func combine<A, B, C, D, E>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>, _ e: Stream<E>) -> Stream<(A, B, C, D, E)> {
+public func combine<A, B, C, D, E>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>, _ e: Stream<E>) -> Stream<(A, B, C, D, E)> {
     let stream = Stream<(A, B, C, D, E)>()
     let trigger: () -> Void = { [weak stream] in
         a.last { va in
@@ -452,6 +454,7 @@ func combine<A, B, C, D, E>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d:
         d.subscribe { (_) in trigger() },
         e.subscribe { (_) in trigger() }
     ]
+    trigger()
     // destroying when all parents die
     var count = 5
     let disposer = DisposableFunc() { [weak stream] in
@@ -468,7 +471,7 @@ func combine<A, B, C, D, E>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d:
     return stream
 }
 
-func combine<A, B, C, D, E, F>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>, _ e: Stream<E>, _ f: Stream<F>) -> Stream<(A, B, C, D, E, F)> {
+public func combine<A, B, C, D, E, F>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _ d: Stream<D>, _ e: Stream<E>, _ f: Stream<F>) -> Stream<(A, B, C, D, E, F)> {
     let stream = Stream<(A, B, C, D, E, F)>()
     let trigger: () -> Void = { [weak stream] in
         a.last { va in
@@ -493,6 +496,7 @@ func combine<A, B, C, D, E, F>(_ a: Stream<A>, _ b: Stream<B>, _ c: Stream<C>, _
         e.subscribe { (_) in trigger() },
         f.subscribe { (_) in trigger() }
     ]
+    trigger()
     // destroying when all parents die
     var count = 6
     let disposer = DisposableFunc() { [weak stream] in
